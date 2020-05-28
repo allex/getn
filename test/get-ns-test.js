@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { getv } from '../'
+import { getv, parseNs } from '../'
 
 describe('predicate', () => {
   var o = {
@@ -38,5 +38,21 @@ describe('predicate', () => {
     assert.deepEqual(getv(o, 'a.c.d.o.b.k1'), o.a['c.d']['o.b'].k1, "o.a['c.d']['o.b'].k1")
     assert.deepEqual(getv(o, 'a.c.d.e'), o.a['c.d.e'], "a['c.d.e']")
     assert.deepEqual(getv(o, 'a.attrs.tt.3'), o.a['attrs.tt'][3], "a['attrs.tt'][3]")
+  })
+
+  test('trace parseNs count', () => {
+    const path = 'a.dd.xx.n.k'.split('.') // only first step valid
+    const model = parseNs(o, path)
+    assert.equal(model.k, path[1])
+    assert.equal(model.v, undefined, 'invalid paths')
+    assert.equal(model.n, path.length - 1, 'invalid paths trace position')
+  })
+
+  test('trace parseNs count deeply', () => {
+    // o.a['c.d']['o.b']...
+    const path = 'a.c.d.o.b.no_exist.foo'.split('.')
+    const model = parseNs(o, path)
+    assert.equal(model.k, 'no_exist')
+    assert.equal(model.n, 2, 'invalid paths trace position')
   })
 })

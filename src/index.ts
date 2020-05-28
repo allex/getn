@@ -7,38 +7,53 @@
 
 interface Kv<T> { [k: string ]: T; }
 
-export const parseNs = <T extends Kv<any>> (o: T, arr: string[]): {
+const hasOwnProperty = {}.hasOwnProperty
+
+export const hasOwn = (o: any, k: string): boolean => hasOwnProperty.call(o, k)
+
+export const parseNs = <T extends Kv<any>> (
+  o: T,
+  arr: string[],
+  count?: number /* internal parameter */
+): {
   o: any;
   v: any;
   k: string | undefined;
+  n: number; // return 0 if ns parse success
 } => {
   arr = arr.slice(0)
+  count = count === undefined ? arr.length : count
   let backtrack: string[] = []
   let k: string | undefined
+
   // tmp for swap
   let t: any = o
+
   while (arr.length) {
     k = arr.join('.')
     const last = arr.pop()!
-    o = t
-    if (k in o) {
+    if (t && hasOwn(t, k)) {
+      o = t
       t = o[k]
+      count -= (arr.length + 1)
       arr = backtrack.length ? backtrack : []
       backtrack = []
     } else {
       backtrack.unshift(last)
     }
   }
+
   const l = backtrack.length
   if (l) {
     let i = -1
     while ((k = backtrack[++i])) {
-      o = t
-      if (k in o) {
+      if (hasOwn(t, k)) {
+        o = t
         t = o[k]
+        count -= 1
       } else {
         if (i > 0 && i < l - 1) {
-          return parseNs(o, backtrack.slice(i))
+          return parseNs(t, backtrack.slice(i), count)
         } else {
           t = undefined
           break
@@ -46,7 +61,8 @@ export const parseNs = <T extends Kv<any>> (o: T, arr: string[]): {
       }
     }
   }
-  return { o, v: t, k }
+
+  return { o, v: t, k, n: count }
 }
 
 export const getv = <T extends Kv<any>> (o: T, ns: string) => {

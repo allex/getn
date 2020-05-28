@@ -1,0 +1,70 @@
+{
+  "name": "getn",
+  "version": "1.0.0",
+  "description": "Helper for get a value from an object by its path",
+  "jsnext:main": "lib/index.esm.js",
+  "module": "lib/index.esm.js",
+  "main": "lib/index.js",
+  "types": "index.d.ts",
+  "repository": "allex/getn",
+  "keywords": [
+    "object",
+    "namespace",
+    "xpath",
+    "get-by-path",
+    "getv"
+  ],
+  "scripts": {
+    "precommit": "yarn lint && yarn test",
+    "lint": "tslint -p tsconfig.json src/{**/,}*.ts",
+    "lint:fix": "tslint -p tsconfig.json src/{**/,}*.ts --fix",
+    "test": "jest --coverage --passWithNoTests",
+    "build": "yarn lint && rb -c",
+    "prepare": "yarn build"
+  },
+  "author": "allex <allex.wxn@gmail.com> (http://iallex.com/)",
+  "dependencies": {
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@allex/typescript": "next",
+    "@babel/core": "^7.6.2",
+    "@babel/preset-env": "^7.6.2",
+    "@babel/runtime": "^7.6.2",
+    "@types/node": "^10.5.4",
+    "babel-core": "bridge",
+    "babel-jest": "^26.0.1",
+    "husky": "^1.1.2",
+    "jest": "^26.0.1",
+    "ts-mockito": "^2.3.0",
+    "ts-node": "^7.0.0",
+    "tslint": "^5"
+  },
+  "license": "MIT",
+  "files": [
+    "index.d.ts",
+    "lib/",
+    "types"
+  ],
+  "jest": {
+    "testEnvironment": "node",
+    "modulePaths": [
+      "src"
+    ],
+    "testMatch": [
+      "**/?(*-)+(spec|test).?(m)js"
+    ],
+    "roots": [
+      "test"
+    ],
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "transform": {
+      "\\.js$": "babel-jest"
+    }
+  }
+}

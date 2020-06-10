@@ -9,7 +9,7 @@ interface Kv<T> { [k: string ]: T; }
 
 const hasOwnProperty = {}.hasOwnProperty
 
-export const hasOwn = (o: any, k: string): boolean => hasOwnProperty.call(o, k)
+const hasOwn = (o: any, k: string): boolean => hasOwnProperty.call(o, k)
 
 export const parseNs = <T extends Kv<any>> (
   o: T,
@@ -19,8 +19,11 @@ export const parseNs = <T extends Kv<any>> (
   o: any;
   v: any;
   k: string | undefined;
-  n: number; // return 0 if ns parse success
+  n: number; // return the remain paths number (0 if whole paths parased)
 } => {
+  if (!Array.isArray(arr)) {
+    throw new Error('Invalid prop paths')
+  }
   arr = arr.slice(0)
   count = count === undefined ? arr.length : count
   let backtrack: string[] = []

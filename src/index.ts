@@ -9,8 +9,14 @@ interface Kv<T> { [k: string ]: T; }
 
 const hasOwnProperty = {}.hasOwnProperty
 
-const hasOwn = (o: any, k: string): boolean => hasOwnProperty.call(o, k)
+const hasOwn = (o: any, k: string): boolean => o && hasOwnProperty.call(o, k)
 
+/**
+ * Parse nested json by a set of paths
+ *
+ * @param {Object} o The host object to get
+ * @param {Array<string>} arr The target paths, should be a path list
+ */
 export const parseNs = <T extends Kv<any>> (
   o: T,
   arr: string[],
@@ -35,7 +41,7 @@ export const parseNs = <T extends Kv<any>> (
   while (arr.length) {
     k = arr.join('.')
     const last = arr.pop()!
-    if (t && hasOwn(t, k)) {
+    if (hasOwn(t, k)) {
       o = t
       t = o[k]
       count -= (arr.length + 1)
@@ -68,7 +74,15 @@ export const parseNs = <T extends Kv<any>> (
   return { o, v: t, k, n: count }
 }
 
-export const getv = <T extends Kv<any>> (o: T, ns: string) => {
+/**
+ * Get a value from an object by its path
+ *
+ * @param {Object} o The host object to get
+ * @param {Array<string>} ns The target path namespace with dot(.) identifier
+ * @param {T} defVal Returns the default value if target value is undefined
+ */
+export const getv = <T> (o: any, ns: string, defVal?: T) => {
   const model = parseNs(o, ns.split('.'))
-  return model.v
+  const v = model.v
+  return v === undefined ? defVal : v
 }

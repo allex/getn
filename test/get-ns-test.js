@@ -2,19 +2,71 @@ import assert from 'assert'
 
 import { getv, parseNs } from '../'
 
-describe('predicate', () => {
+describe('getv', () => {
+  const object = {
+    foo: {
+      bar: 1
+    },
+    baz: 5,
+    lor: ['mir', 'dal'],
+    tar: false
+  }
+
+  const array = [
+    {
+      id: 1,
+      name: 'Test'
+    }
+  ]
+
+  it('should return undefined when path is incorrect', () => {
+    assert.equal(getv(object, 'none.bar'), undefined)
+  })
+
+  it('should return undefined when path is incorrect, even if it is deeply nested', () => {
+    assert.equal(getv(object, 'none.bar.nor.gar'), undefined)
+  })
+
+  it('should be able to return false', () => {
+    assert.equal(getv(object, 'tar'), false)
+  })
+
+  it('should return a default value when path is incorrect and a default value is specified', () => {
+    assert.equal(getv(object, 'none.bar', 'default'), 'default')
+  })
+
+  it('should return 5 for baz', () => {
+    assert.equal(getv(object, 'baz'), 5)
+  })
+
+  it('should return 1 for foo.bar', () => {
+    assert.equal(getv(object, 'foo.bar'), 1)
+  })
+
+  it('should return "dal" for index 1 of lor', () => {
+    assert.equal(getv(object, 'lor.1'), 'dal')
+  })
+
+  it('should ignore default value if path is correct', () => {
+    assert.equal(getv(object, 'lor.1'), 'dal')
+  })
+
+  it('should accept array', () => {
+    assert.equal(getv(array, '0.id'), 1)
+  })
+
+  it('should treat missing inner array as undefined', () => {
+    assert.equal(getv(array, '0.items', []).length, 0)
+  })
+})
+
+describe('parseNs', () => {
   var o = {
     a: {
       b: {
         c: {
           d: 1,
           'k.k': 'k'
-        }
-      },
-      c: {
-        d: {
-          k: 2,
-          'k.k': 3
         }
       },
       'c.d': {
@@ -26,7 +78,8 @@ describe('predicate', () => {
       },
       'c.d.e': 7,
       'attrs.tt': [1, 2, 3, 4]
-    }
+    },
+    'tar': false
   }
 
   const checkNs = (ns, hostObj, k) => {
@@ -38,11 +91,6 @@ describe('predicate', () => {
     assert.deepEqual(model.o, hostObj, x + '/o')
     assert.equal(model.n, 0, x + '/n')
   }
-
-  test('get by ns path string', () => {
-    assert.equal(getv(o, 'a.b'), o.a.b, 'a.b')
-    assert.equal(getv(o, 'a.b.c.d'), o.a.b.c.d, 'a.b.c.d')
-  })
 
   test('parse by ns path', () => {
     checkNs('a.b', o.a, 'b')

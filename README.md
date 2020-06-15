@@ -15,12 +15,6 @@ import { getv, parseNs } from 'getn'
 
 const o = {
   a: {
-    c: {
-      d: {
-        k: 2,
-        'k.k': 3
-      }
-    },
     'c.d': {
       f: 4,
       'k.n': 5,
@@ -35,7 +29,7 @@ const path = 'a.c.d.o.b.k1'
 const model = parseNs(o, path.split('.'))
 
 console.log(model) // { o: o.a['c.d']['o.b'], k: 'k1', v: 6, n: 0 }
-console.log(getv(o, 'a.c.d.o.b.k1')) // 3
+console.log(getv(o, 'a.c.d.o.b.k1')) // 6
 ```
 
 ## License

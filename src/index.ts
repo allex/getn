@@ -11,67 +11,75 @@ const hasOwnProperty = {}.hasOwnProperty
 
 const hasOwn = (o: any, k: string): boolean => o && hasOwnProperty.call(o, k)
 
+type TKey = string | undefined
+
 /**
  * Parse nested json by a set of paths
  *
- * @param {Object} o The host object to get
- * @param {Array<string>} arr The target paths, should be a path list
+ * @param {Object} t The host object to get
+ * @param {Array<string>} keys The target paths, should be a path list
  */
 export const parseNs = <T extends Kv<any>> (
-  o: T,
-  arr: string[],
-  count?: number /* internal parameter */
+  t: T,
+  keys: string[]
 ): {
   o: any;
   v: any;
-  k: string | undefined;
-  n: number; // return the remain paths number (0 if whole paths parased)
+  k: TKey;
+  n?: number; // return the remain paths number (undefined if whole paths parased)
 } => {
-  if (!Array.isArray(arr)) {
+  if (!Array.isArray(keys)) {
     throw new Error('Invalid prop paths')
   }
-  arr = arr.slice(0)
-  count = count === undefined ? arr.length : count
-  let backtrack: string[] = []
-  let k: string | undefined
 
-  // tmp for swap
-  let t: any = o
+  let o: any = t
+  let k: string = ''
+  const stack: Array<[any, string[]]> = []
 
-  while (arr.length) {
-    k = arr.join('.')
-    const last = arr.pop()!
+  while (keys.length > 0) {
+    stack.push([t, keys])
+    keys = keys.slice(0)
+    k = keys.shift()!
+
     if (hasOwn(t, k)) {
       o = t
-      t = o[k]
-      count -= (arr.length + 1)
-      arr = backtrack.length ? backtrack : []
-      backtrack = []
+      t = t[k]
     } else {
-      backtrack.unshift(last)
-    }
-  }
+      const last = stack[stack.length - 1]
 
-  const l = backtrack.length
-  if (l) {
-    let i = -1
-    while ((k = backtrack[++i])) {
-      if (hasOwn(t, k)) {
-        o = t
-        t = o[k]
-        count -= 1
-      } else {
-        if (i > 0 && i < l - 1) {
-          return parseNs(t, backtrack.slice(i), count)
-        } else {
-          t = undefined
-          break
+      do {
+        const [ host, paths ] = stack.pop()!
+        const l = paths.length
+        let i = 0
+        while (++i < l) {
+          const ns = paths.slice(0, i + 1).join('.')
+          if (hasOwn(host, ns)) {
+            if (i < l - 1) {
+              const ret = parseNs(host[ns], paths.slice(i + 1))
+              if (ret.n === undefined) {
+                return ret
+              }
+            } else {
+              return {
+                o: host,
+                k: ns,
+                v: host[ns]
+              }
+            }
+          }
         }
+      } while (stack.length)
+
+      return {
+        o: last[0],
+        k,
+        v: undefined,
+        n: keys.length + 1
       }
     }
   }
 
-  return { o, v: t, k, n: count }
+  return { o, k, v: t }
 }
 
 /**
